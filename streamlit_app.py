@@ -15,17 +15,19 @@ X = np.array([
 y = np.array([1, 0, 1, 1, 0, 0])
 
 class Perceptron:
-    def __init__(self, learning_rate=0.01, n_iters=1000):
+    def __init__(self, learning_rate=0.01, n_iters=1000, weights=None, bias=None):
         self.lr = learning_rate
         self.n_iters = n_iters
         self.activation_func = self._unit_step_func
-        self.weights = None
-        self.bias = None
+        self.weights = weights
+        self.bias = bias
 
     def fit(self, X, y):
         n_samples, n_features = X.shape
-        self.weights = np.zeros(n_features)
-        self.bias = 0
+        if self.weights is None:
+            self.weights = np.zeros(n_features)
+        if self.bias is None:
+            self.bias = 0
 
         for _ in range(self.n_iters):
             for idx, x_i in enumerate(X):
@@ -45,10 +47,6 @@ class Perceptron:
     def _unit_step_func(x):
         return np.where(x >= 0, 1, 0)
 
-# Inicializar e treinar o perceptron
-perceptron = Perceptron(learning_rate=0.1, n_iters=10)
-perceptron.fit(X, y)
-
 # Interface do Streamlit
 st.title("Detecção de Spam em Emails com Perceptron")
 
@@ -57,6 +55,17 @@ st.write("Insira as características do email para prever se é spam ou não:")
 e1 = st.number_input("Número de palavras específicas (ex: 'grátis', 'promoção')", min_value=0, step=1)
 e2 = st.selectbox("Presença de links", [0, 1], format_func=lambda x: "Sim" if x == 1 else "Não")
 e3 = st.selectbox("Remetente não confiável", [0, 1], format_func=lambda x: "Sim" if x == 1 else "Não")
+
+st.write("Ajuste os pesos e o bias do perceptron:")
+
+w1 = st.number_input("Peso para número de palavras específicas (w1)", value=2.0)
+w2 = st.number_input("Peso para presença de links (w2)", value=1.0)
+w3 = st.number_input("Peso para remetente não confiável (w3)", value=1.5)
+b = st.number_input("Bias", value=-2.0)
+
+# Inicializar o perceptron com os pesos e bias fornecidos pelo usuário
+perceptron = Perceptron(learning_rate=0.1, n_iters=10, weights=np.array([w1, w2, w3]), bias=b)
+perceptron.fit(X, y)
 
 if st.button("Verificar"):
     X_novo = np.array([[e1, e2, e3]])
